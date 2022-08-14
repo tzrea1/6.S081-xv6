@@ -1,0 +1,80 @@
+1. Which registers contain arguments to functions? For example, which register holds 13 in main's call to printf?
+
+  a1、a2
+  a2
+
+2. Where is the call to function f in the assembly code for main? Where is the call to g? (Hint: the compiler may inline functions.)
+
+2.1  no call f()(and no call g())
+     make inline optimization that a1 = 12
+2.2  the compiler inline func (look at line:32)
+   26 int f(int x) {
+   27    e:   1141                    addi    sp,sp,-16
+   28   10:   e422                    sd  s0,8(sp)
+   29   12:   0800                    addi    s0,sp,16
+   30   return g(x);
+   31 }
+   32   14:   250d                    addiw   a0,a0,3
+   33   16:   6422                    ld  s0,8(sp)
+   34   18:   0141                    addi    sp,sp,16
+   35   1a:   8082                    ret
+
+3. At what address is the function printf located?
+   0x30+1536=0x630
+
+4. What value is in the register 'ra' just after the 'jalr' to 'printf' in 'main'?
+   ra = pc+4 = 0x34 + 0x4 = 0x38
+
+5. Run the following code.
+
+	unsigned int i = 0x00646c72;
+	printf("H%x Wo%s", 57616, &i);
+
+What is the output? Here's an ASCII table that maps bytes to characters.
+The output depends on that fact that the RISC-V is little-endian. If the RISC-V were instead big-endian what would you set i to in order to yield the same output? Would you need to change 57616 to a different value?
+
+5.1
+I run this process in win10, because ubuntu has warning(win10 also use little endian and I make some changes)
+
+#include<stdio.h>
+int main(){
+	unsigned int i = 0x00646c72;
+	printf("H%x Wo%s \n", 57616, &i);
+    printf("H%x Wo%x \n", 57616, i);
+}
+
+output:
+He110 World
+He110 Wo646c72
+
+5.2
+in ASCII: 0x72->r, 0x6c->l, 0x64->d
+if RISC-V is big endian, we must change i (i = 0x00646c72 => i = 0x00726c64)
+because we would the value of fisrt addr is 0x72 in big endian
+
+No change 57616
+because we only use it hexadecimal value
+
+6.In the following code, what is going to be printed after 'y='? (note: the answer is not a specific value.) Why does this happen?
+
+	printf("x=%d y=%d", 3);
+
+I also run this process in win10 and I also make some changes
+
+#include<stdio.h>
+int main(){
+    printf("x=%d y=%d \n");
+    printf("x=%d y=%d \n", 3);
+}
+
+output:
+x=11364944 y=11356192
+x=3 y=434198848
+
+before run this process,
+x belong to a register that value is 11364944
+y belong to another register that value is 434198848
+
+before run this process,
+x belong to a register that value be changed to 3
+y belong to another register that value also is 434198848
